@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>RankUp Stopwatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+body { background: linear-gradient(135deg, #ffffff, #a7baef); font-family: 'Manrope', sans-serif; }
+.material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.avatar-initials { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#103bbc,#3b5ff5); color:white; font-weight:800; font-size:16px; display:flex; align-items:center; justify-content:center; border:2px solid #93c5fd; flex-shrink:0; }
+.streak-active { background: linear-gradient(135deg, #ff6b35, #f7c59f); }
+.streak-danger { background: linear-gradient(135deg, #ef4444, #fca5a5); }
+.streak-dead   { background: linear-gradient(135deg, #94a3b8, #cbd5e1); }
+.pulse { animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+.retrieve-btn { background: linear-gradient(135deg, #103bbc, #3b5ff5); }
+.retrieve-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+/* Progress ring */
+.progress-ring-circle {
+  transition: stroke-dashoffset 1s linear;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* Floating timer pill (shown on all pages when running) */
+#floating-timer {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  background: linear-gradient(135deg, #103bbc, #3b5ff5);
+  color: white;
+  border-radius: 50px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(16,59,188,0.35);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  display: none;
+}
+#floating-timer:hover { transform: scale(1.04); }
+#floating-timer .ft-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #4ade80;
+  animation: blink 1s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+</style>
+</head>
+<body class="font-display text-[#0d111b]" style="font-family:'Manrope',sans-serif">
+
+<!-- Floating timer pill (visible on this page too when running) -->
+<div id="floating-timer" onclick="window.location.href='stopwatch.html'" title="Go to Stopwatch">
+  <div class="ft-dot"></div>
+  <span class="material-symbols-outlined text-base">timer</span>
+  <span id="floating-time">00:00:00</span>
+  <span class="text-xs opacity-70">running</span>
+</div>
+
+<header class="bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-blue-100 rounded-b-xl shadow-sm">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center gap-4">
+        <svg class="h-8 w-8 text-blue-700" fill="none" viewBox="0 0 48 48"><g clip-path="url(#c)"><path clip-rule="evenodd" d="M47.2426 24L24 47.2426L0.757355 24L24 0.757355L47.2426 24ZM12.2426 24ZM12.2426 21H35.7574L24 9.24264L12.2426 21Z" fill="currentColor" fill-rule="evenodd"/></g><defs><clipPath id="c"><rect fill="white" height="48" width="48"/></clipPath></defs></svg>
+        <h1 class="text-xl font-bold">RankUp</h1>
+      </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="flashcards.html">Flashcards</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="quiz.html">Quizzes</a>
+        <a class="text-sm font-bold text-blue-700" href="#">Stopwatch</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="leaderboard.html">Leaderboard</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="chatbot.html">Chatbot</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <div class="avatar-initials" id="user-avatar">?</div>
+        <div class="leading-tight hidden sm:block">
+          <p class="font-bold text-sm" id="user-name">...</p>
+          <p class="text-xs text-gray-500" id="user-email">...</p>
+        </div>
+        <button onclick="logout()" class="ml-1 flex items-center gap-1 px-3 py-1.5 rounded-full bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold transition-colors border border-red-200">
+          <span class="material-symbols-outlined text-sm">logout</span> Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="p-12 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+  <div class="w-full max-w-3xl mx-auto space-y-6">
+    <div class="text-center">
+      <h2 class="text-3xl font-extrabold text-gray-800 sm:text-4xl">Stopwatch</h2>
+      <p class="mt-2 text-gray-500">Focus on your learning, one second at a time.</p>
+    </div>
+
+    <!-- Timer card -->
+    <div class="bg-white/70 p-8 rounded-xl shadow-lg text-center border border-gray-200">
+
+      <!-- Progress ring + time display -->
+      <div class="relative flex items-center justify-center mb-6">
+        <svg width="220" height="220" viewBox="0 0 220 220">
+          <!-- Track -->
+          <circle cx="110" cy="110" r="95" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+          <!-- Progress: 30min = 1800s full circle -->
+          <circle id="progress-ring" cx="110" cy="110" r="95" fill="none"
+            stroke="#103bbc" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="596.9" stroke-dashoffset="596.9"
+            class="progress-ring-circle"/>
+        </svg>
+        <div class="absolute text-center">
+          <p class="text-4xl font-extrabold text-blue-700 tabular-nums" id="timer-display">00:00:00</p>
+          <p class="text-xs text-gray-400 mt-1" id="timer-goal-text">Goal: 30 min for streak</p>
+          <p class="text-xs font-bold mt-1" id="timer-status-label"></p>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex gap-4 justify-center">
+        <button id="start-btn" onclick="toggleTimer()"
+          class="px-8 py-3 bg-blue-700 text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-md flex items-center gap-2">
+          <span class="material-symbols-outlined" id="start-icon">play_arrow</span>
+          <span id="start-label">Start</span>
+        </button>
+        <button onclick="resetTimer()"
+          class="px-8 py-3 bg-blue-700/10 text-blue-700 font-bold rounded-xl hover:bg-blue-700/20 transition-colors flex items-center gap-2">
+          <span class="material-symbols-outlined">restart_alt</span> Reset
+        </button>
+      </div>
+
+      <!-- Running banner -->
+      <div id="running-banner" class="hidden mt-4 flex items-center justify-center gap-2 text-sm text-green-700 font-semibold bg-green-50 border border-green-200 rounded-lg px-4 py-2">
+        <div class="ft-dot w-2 h-2 rounded-full bg-green-500" style="animation:blink 1s ease-in-out infinite"></div>
+        Timer is running — you can navigate away and it will continue!
+      </div>
+
+      <p id="session-saved-msg" class="hidden mt-4 text-sm text-green-600 font-semibold">✅ Session saved!</p>
+      <p id="streak-earned-msg" class="hidden mt-2 text-sm font-bold text-orange-500">🔥 Streak updated — 30+ minutes studied!</p>
+      <p id="no-streak-msg"     class="hidden mt-2 text-sm text-gray-400">Session saved but no streak — study 30+ min for a streak.</p>
+    </div>
+
+    <!-- Streak Card -->
+    <div id="streak-card" class="p-6 rounded-xl shadow-md text-white transition-all">
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-4">
+          <div class="bg-white/20 p-3 rounded-full">
+            <span class="material-symbols-outlined text-white" id="streak-icon">bolt</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold">Current Streak</h3>
+            <p class="text-sm opacity-80" id="streak-subtext">Study 30+ min every day to keep your streak!</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-4xl font-extrabold" id="streak-count">0</p>
+          <p class="text-sm opacity-80">Days</p>
+        </div>
+      </div>
+      <div class="bg-white/20 rounded-lg p-3 mb-4">
+        <p class="text-sm font-semibold" id="streak-status-text">Start a 30-min session today to begin your streak!</p>
+        <p class="text-xs opacity-70 mt-1" id="streak-deadline-text"></p>
+      </div>
+      <button id="retrieve-btn" onclick="retrieveStreak()"
+        class="retrieve-btn w-full text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all hover:opacity-90 shadow-md">
+        <span class="material-symbols-outlined text-sm">restore</span>
+        <span id="retrieve-btn-text">Retrieve Streak (within 24h)</span>
+      </button>
+      <p class="text-xs opacity-60 mt-2 text-center" id="retrieve-note">If you studied 30+ min yesterday but forgot to save, retrieve within 24 hours.</p>
+    </div>
+
+    <!-- Session History -->
+    <div class="bg-white/70 p-6 rounded-xl shadow-md border border-gray-200">
+      <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+        <span class="material-symbols-outlined text-blue-700">history</span> Session History
+      </h3>
+      <div id="session-history" class="space-y-2">
+        <p class="text-sm text-gray-400">No sessions recorded yet.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── Auth ──────────────────────────────────────────────────────────
+const currentUser = JSON.parse(localStorage.getItem('rankup_current_user') || 'null');
+if (!currentUser) { window.location.href = 'login.html'; }
+const displayName = currentUser.name || currentUser.username || 'User';
+document.getElementById('user-name').textContent  = displayName;
+document.getElementById('user-email').textContent = currentUser.email || '';
+const initials = displayName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+document.getElementById('user-avatar').textContent = initials;
+function logout() { localStorage.removeItem('rankup_current_user'); window.location.href = 'login.html'; }
+
+// ── Storage keys ──────────────────────────────────────────────────
+const uid         = currentUser.email || currentUser.username;
+const STREAK_KEY  = 'rankup_streak_'   + uid;
+const SESSION_KEY = 'rankup_sessions_' + uid;
+const TIMER_KEY   = 'rankup_timer_'    + uid;   // persistent timer state
+
+const STREAK_MIN_SECS = 30 * 60; // 30 minutes required for streak
+const RING_CIRCUMFERENCE = 2 * Math.PI * 95; // 596.9
+
+// ── Persistent timer state ────────────────────────────────────────
+// Stored as: { running: bool, startTs: epochMs, accSecs: number }
+// accSecs = seconds accumulated before the last "start" press
+// When running: total = accSecs + (now - startTs)/1000
+// When paused:  total = accSecs
+
+function getTimerState() {
+  return JSON.parse(localStorage.getItem(TIMER_KEY) || JSON.stringify({ running: false, startTs: null, accSecs: 0 }));
+}
+function saveTimerState(state) { localStorage.setItem(TIMER_KEY, JSON.stringify(state)); }
+
+function getTotalSecs() {
+  const t = getTimerState();
+  if (t.running && t.startTs) {
+    return t.accSecs + Math.floor((Date.now() - t.startTs) / 1000);
+  }
+  return t.accSecs;
+}
+
+// ── Display helpers ───────────────────────────────────────────────
+function secsToHMS(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  return [String(h).padStart(2,'0'), String(m).padStart(2,'0'), String(s).padStart(2,'0')].join(':');
+}
+function formatDuration(secs) {
+  const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
+  if (h) return `${h}h ${m}m`;
+  if (m) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+// ── Update timer UI ───────────────────────────────────────────────
+let tickInterval = null;
+
+function updateTimerUI() {
+  const total = getTotalSecs();
+  const state = getTimerState();
+  const hms   = secsToHMS(total);
+
+  document.getElementById('timer-display').textContent = hms;
+  document.getElementById('floating-time').textContent = hms;
+
+  // Progress ring — fills up over 1800s (30 min)
+  const progress = Math.min(total / STREAK_MIN_SECS, 1);
+  const offset   = RING_CIRCUMFERENCE * (1 - progress);
+  document.getElementById('progress-ring').style.strokeDashoffset = offset;
+
+  // Ring color: green once 30min hit
+  const ring = document.getElementById('progress-ring');
+  if (total >= STREAK_MIN_SECS) {
+    ring.style.stroke = '#16a34a';
+    document.getElementById('timer-goal-text').textContent = '✅ 30 min reached — streak eligible!';
+    document.getElementById('timer-goal-text').className = 'text-xs text-green-600 font-bold mt-1';
+  } else {
+    ring.style.stroke = '#103bbc';
+    const remaining = STREAK_MIN_SECS - total;
+    document.getElementById('timer-goal-text').textContent = `${formatDuration(remaining)} until streak`;
+    document.getElementById('timer-goal-text').className = 'text-xs text-gray-400 mt-1';
+  }
+
+  // Floating pill
+  const floatEl = document.getElementById('floating-timer');
+  floatEl.style.display = state.running ? 'flex' : 'none';
+
+  // Running banner
+  document.getElementById('running-banner').classList.toggle('hidden', !state.running);
+
+  // Button state
+  const icon  = document.getElementById('start-icon');
+  const label = document.getElementById('start-label');
+  if (state.running) { icon.textContent = 'pause'; label.textContent = 'Pause'; }
+  else               { icon.textContent = total > 0 ? 'play_arrow' : 'play_arrow'; label.textContent = total > 0 ? 'Resume' : 'Start'; }
+}
+
+function startTick() {
+  if (tickInterval) clearInterval(tickInterval);
+  tickInterval = setInterval(updateTimerUI, 1000);
+}
+
+// ── Toggle (start / pause) ────────────────────────────────────────
+function toggleTimer() {
+  const t = getTimerState();
+  if (!t.running) {
+    // Start / Resume
+    t.running = true;
+    t.startTs = Date.now();
+    saveTimerState(t);
+    startTick();
+  } else {
+    // Pause — fold elapsed into accSecs
+    const elapsed = Math.floor((Date.now() - t.startTs) / 1000);
+    t.accSecs += elapsed;
+    t.running  = false;
+    t.startTs  = null;
+    saveTimerState(t);
+    clearInterval(tickInterval);
+    tickInterval = null;
+  }
+  updateTimerUI();
+}
+
+// ── Reset ─────────────────────────────────────────────────────────
+function resetTimer() {
+  const total = getTotalSecs();
+  if (total > 0) {
+    const confirmed = confirm(
+      total >= STREAK_MIN_SECS
+        ? `Save this session (${formatDuration(total)}) and reset? Your streak will be updated!`
+        : `Save this session (${formatDuration(total)}) and reset?\n\nNote: sessions under 30 min don't count toward your streak.`
+    );
+    if (confirmed) saveSession(total);
+  }
+  clearInterval(tickInterval); tickInterval = null;
+  saveTimerState({ running: false, startTs: null, accSecs: 0 });
+  updateTimerUI();
+  // Reset ring + label
+  document.getElementById('progress-ring').style.strokeDashoffset = RING_CIRCUMFERENCE;
+  document.getElementById('timer-goal-text').textContent = 'Goal: 30 min for streak';
+  document.getElementById('timer-goal-text').className = 'text-xs text-gray-400 mt-1';
+  document.getElementById('start-label').textContent = 'Start';
+  document.getElementById('start-icon').textContent  = 'play_arrow';
+}
+
+// ── Save session ──────────────────────────────────────────────────
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function yesterdayStr() { const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+
+function saveSession(durationSecs) {
+  const sessions = JSON.parse(localStorage.getItem(SESSION_KEY) || '[]');
+  sessions.unshift({ date: todayStr(), duration: durationSecs, ts: Date.now() });
+  if (sessions.length > 20) sessions.length = 20;
+  localStorage.setItem(SESSION_KEY, JSON.stringify(sessions));
+
+  // Update streak only if 30+ minutes
+  const streakEarned = durationSecs >= STREAK_MIN_SECS;
+  if (streakEarned) updateStreak();
+
+  renderSessionHistory();
+  updateStreakCard();
+
+  document.getElementById('session-saved-msg').classList.remove('hidden');
+  document.getElementById('streak-earned-msg').classList.toggle('hidden', !streakEarned);
+  document.getElementById('no-streak-msg').classList.toggle('hidden', streakEarned);
+  setTimeout(() => {
+    document.getElementById('session-saved-msg').classList.add('hidden');
+    document.getElementById('streak-earned-msg').classList.add('hidden');
+    document.getElementById('no-streak-msg').classList.add('hidden');
+  }, 4000);
+}
+
+// ── Streak logic ──────────────────────────────────────────────────
+function getStreakData() {
+  return JSON.parse(localStorage.getItem(STREAK_KEY) || JSON.stringify({
+    count:0, lastStudyDate:null, retrieveUsed:false, retrieveDate:null
+  }));
+}
+function saveStreakData(d) { localStorage.setItem(STREAK_KEY, JSON.stringify(d)); }
+
+function updateStreak() {
+  const d = getStreakData(), today = todayStr(), yesterday = yesterdayStr();
+  if (d.lastStudyDate === today) {
+    // already counted today
+  } else if (d.lastStudyDate === yesterday) {
+    d.count++;
+  } else {
+    d.count = 1;
+  }
+  d.lastStudyDate = today;
+  saveStreakData(d);
+}
+
+function getStreakStatus() {
+  const d = getStreakData(), today = todayStr(), yesterday = yesterdayStr();
+  if (!d.lastStudyDate) return 'new';
+  if (d.lastStudyDate === today) return 'done_today';
+  if (d.lastStudyDate === yesterday) return 'needs_today';
+  const lastMs = new Date(d.lastStudyDate).getTime();
+  if (Date.now() - lastMs < 48 * 3600 * 1000) return 'retrieve_possible';
+  return 'dead';
+}
+
+function updateStreakCard() {
+  const d = getStreakData(), status = getStreakStatus();
+  const card = document.getElementById('streak-card');
+  document.getElementById('streak-count').textContent = d.count;
+
+  const cfg = {
+    done_today:       { cls:'streak-active', icon:'local_fire_department', sub:'You hit 30+ min today! 🔥', status:'✅ Session logged for today. Come back tomorrow!', deadline:'', retrieveDisabled:true, retrieveLabel:'Streak is active — no retrieval needed', note:'' },
+    needs_today:      { cls:'streak-danger', icon:'warning',               sub:'Study 30+ min today to keep your streak!', status:'⚠️ Start and save a 30-min session today to continue your streak.', deadline:'Streak resets at midnight.', retrieveDisabled:false, retrieveLabel:'Retrieve Streak (within 24h)', note:'If you already studied 30+ min but forgot to save, tap to retrieve.' },
+    retrieve_possible:{ cls:'streak-danger', icon:'restore',               sub:'Streak paused — you can still retrieve it!', status:'⏳ You have a 24h window to retrieve your streak.', deadline:'Retrieval window open.', retrieveDisabled: d.retrieveUsed && d.retrieveDate===d.lastStudyDate, retrieveLabel: (d.retrieveUsed && d.retrieveDate===d.lastStudyDate) ? 'Retrieval already used' : 'Retrieve Streak (within 24h)', note:'' },
+    dead:             { cls:'streak-dead',   icon:'sentiment_dissatisfied', sub:'Streak lost. Start a new one today!', status:"💔 Your streak ended. Study 30+ min to start fresh.", deadline:'', retrieveDisabled:true, retrieveLabel:'Retrieval window expired', note:'The 24h retrieval window has passed.' },
+    new:              { cls:'streak-active', icon:'bolt',                   sub:'Study 30+ min every day to build your streak!', status:'🚀 Start a session to begin your streak.', deadline:'', retrieveDisabled:true, retrieveLabel:'No active streak to retrieve', note:'' },
+  };
+  const c = cfg[status] || cfg.new;
+  card.className = c.cls + ' p-6 rounded-xl shadow-md text-white transition-all' + (status==='done_today' ? ' pulse' : '');
+  document.getElementById('streak-icon').textContent         = c.icon;
+  document.getElementById('streak-subtext').textContent      = c.sub;
+  document.getElementById('streak-status-text').textContent  = c.status;
+  document.getElementById('streak-deadline-text').textContent= c.deadline;
+  document.getElementById('retrieve-btn').disabled           = c.retrieveDisabled;
+  document.getElementById('retrieve-btn-text').textContent   = c.retrieveLabel;
+  document.getElementById('retrieve-note').textContent       = c.note;
+}
+
+function retrieveStreak() {
+  const d = getStreakData(), today = todayStr();
+  const lastMs = d.lastStudyDate ? new Date(d.lastStudyDate).getTime() : 0;
+  if (Date.now() - lastMs >= 24 * 3600 * 1000) { alert('The 24-hour retrieval window has passed.'); return; }
+  if (d.retrieveUsed && d.retrieveDate === d.lastStudyDate) { alert('You have already used retrieval for this session.'); return; }
+  if (d.lastStudyDate === today) { alert('Your streak is already active for today!'); return; }
+  d.count = Math.max(d.count, 1);
+  d.lastStudyDate = today; d.retrieveUsed = true; d.retrieveDate = today;
+  saveStreakData(d);
+  const sessions = JSON.parse(localStorage.getItem(SESSION_KEY) || '[]');
+  sessions.unshift({ date: today, duration: null, ts: Date.now(), retrieved: true });
+  if (sessions.length > 20) sessions.length = 20;
+  localStorage.setItem(SESSION_KEY, JSON.stringify(sessions));
+  updateStreakCard(); renderSessionHistory();
+  alert(`✅ Streak retrieved! You're at ${d.count} day${d.count!==1?'s':''}.`);
+}
+
+function renderSessionHistory() {
+  const sessions = JSON.parse(localStorage.getItem(SESSION_KEY) || '[]');
+  const container = document.getElementById('session-history');
+  if (!sessions.length) { container.innerHTML = '<p class="text-sm text-gray-400">No sessions recorded yet.</p>'; return; }
+  container.innerHTML = sessions.slice(0, 7).map(s => {
+    const streakBadge = (!s.retrieved && s.duration >= STREAK_MIN_SECS)
+      ? '<span class="text-xs bg-orange-100 text-orange-600 font-bold px-2 py-0.5 rounded-full ml-2">🔥 streak</span>' : '';
+    return `
+    <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-blue-400 text-base">${s.retrieved ? 'restore' : 'timer'}</span>
+        <div>
+          <p class="text-sm font-semibold text-gray-700 flex items-center">${s.retrieved ? 'Streak retrieved' : 'Study session'}${streakBadge}</p>
+          <p class="text-xs text-gray-400">${s.date}</p>
+        </div>
+      </div>
+      <span class="text-sm font-bold text-blue-700">${s.duration != null ? formatDuration(s.duration) : '—'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+// On page load, sync UI to current timer state (may be running from another page visit)
+const initState = getTimerState();
+
+// If was running, it's still going (startTs is set) — just resume the tick
+if (initState.running && initState.startTs) {
+  startTick();
+} else if (initState.running) {
+  // Edge case: marked running but no startTs — fix it
+  initState.running = false; saveTimerState(initState);
+}
+
+updateTimerUI();
+updateStreakCard();
+renderSessionHistory();
+</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>RankUp Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+body { background: linear-gradient(135deg, #ffffff, #a7baef); font-family: 'Manrope', sans-serif; }
+.material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.avatar-initials { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#103bbc,#3b5ff5); color:white; font-weight:800; font-size:16px; display:flex; align-items:center; justify-content:center; border:2px solid #93c5fd; flex-shrink:0; }
+</style>
+</head>
+
+<body class="font-display text-[#0d111b]" style="font-family:'Manrope',sans-serif">
+
+<header class="bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-blue-100 rounded-b-xl shadow-sm">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center gap-4">
+        <svg class="h-8 w-8 text-blue-700" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <g clip-path="url(#c)"><path clip-rule="evenodd" d="M47.2426 24L24 47.2426L0.757355 24L24 0.757355L47.2426 24ZM12.2426 21H35.7574L24 9.24264L12.2426 21Z" fill="currentColor" fill-rule="evenodd"/></g>
+          <defs><clipPath id="c"><rect fill="white" height="48" width="48"/></clipPath></defs>
+        </svg>
+        <h1 class="text-xl font-bold">RankUp</h1>
+      </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <a class="text-sm font-bold text-blue-700" href="#">Dashboard</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="flashcards.html">Flashcards</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="quiz.html">Quizzes</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="stopwatch.html">Stopwatch</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="leaderboard.html">Leaderboard</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="chatbot.html">Chatbot</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <div class="avatar-initials" id="user-avatar">?</div>
+        <div class="leading-tight hidden sm:block">
+          <p class="font-bold text-sm" id="user-name">Loading...</p>
+          <p class="text-xs text-gray-500" id="user-email">Loading...</p>
+        </div>
+        <button onclick="logout()" title="Logout"
+          class="ml-2 flex items-center justify-center w-8 h-8 rounded-full bg-red-50 hover:bg-red-100 text-red-500 transition-colors">
+          <span class="material-symbols-outlined text-base">logout</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="p-8">
+  <h1 class="text-4xl font-extrabold text-gray-800 mb-2">Dashboard</h1>
+  <p class="text-gray-500 mb-8" id="welcome-text">Welcome back!</p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-8">
+
+      <!-- Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white/70 p-6 rounded-xl shadow-md border border-gray-200">
+          <h2 class="text-5xl font-bold text-blue-700" id="stat-hours">0</h2>
+          <p class="text-gray-600 mt-2">Hours Studied</p>
+        </div>
+        <div class="bg-white/70 p-6 rounded-xl shadow-md border border-gray-200">
+          <h2 class="text-5xl font-bold text-blue-700" id="stat-flashcards">0</h2>
+          <p class="text-gray-600 mt-2">Flashcard Sets</p>
+        </div>
+        <div class="bg-white/70 p-6 rounded-xl shadow-md border border-gray-200">
+          <h2 class="text-5xl font-bold text-blue-700" id="stat-streak">0</h2>
+          <p class="text-gray-600 mt-2">Day Streak 🔥</p>
+        </div>
+      </div>
+
+      <!-- Quick Access -->
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Quick Access</h2>
+        <div class="flex gap-4 flex-wrap">
+          <a href="stopwatch.html" class="bg-blue-700 text-white font-bold py-3 px-6 rounded-lg flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
+            <span class="material-symbols-outlined">play_circle</span>Start Stopwatch
+          </a>
+          <!-- Redirect to flashcards page with ?generate=1 to auto-open the modal there -->
+          <a href="flashcards.html?generate=1" class="bg-white/70 text-blue-700 font-bold py-3 px-6 rounded-lg flex items-center gap-2 hover:bg-blue-50 transition-all shadow-md border border-blue-200">
+            <span class="material-symbols-outlined">auto_awesome</span>Create Flashcards
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Recent Activity</h2>
+        <div id="recent-activity" class="space-y-4">
+          <p class="text-gray-400 text-sm">No activity yet. Start studying to see your history!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <div class="bg-white/70 p-6 rounded-xl shadow-md border border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Notifications</h2>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-center gap-3"><span class="material-symbols-outlined text-blue-700">new_releases</span>New DSA flashcards available!</li>
+          <li class="flex items-center gap-3"><span class="material-symbols-outlined text-green-500">check_circle</span>Reward unlocked for 10 flashcards</li>
+          <li class="flex items-center gap-3"><span class="material-symbols-outlined text-blue-500">update</span>New course: Advanced OOPS</li>
+          <li class="flex items-center gap-3"><span class="material-symbols-outlined text-purple-500">flash_on</span>Complete pending DAA cards</li>
+        </ul>
+      </div>
+      <div class="bg-white/70 p-6 rounded-xl shadow-md border border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">News</h2>
+        <marquee direction="up" class="text-gray-700 text-sm" height="100">
+          <p class="mb-3">RankUp app v2.1 released with new features!</p>
+          <p class="mb-3">Upcoming coding competition: Participate to earn points.</p>
+          <p class="mb-3">Flashcards leaderboard updated every Sunday.</p>
+          <p class="mb-3">Tip: Study in 25-min focused intervals for better retention.</p>
+        </marquee>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const user = JSON.parse(localStorage.getItem('rankup_current_user') || 'null');
+if (!user) { window.location.href = 'login.html'; }
+
+const displayName = user.name || user.username || 'User';
+document.getElementById('user-name').textContent  = displayName;
+document.getElementById('user-email').textContent = user.email || '';
+const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+document.getElementById('user-avatar').textContent = initials;
+const firstName = displayName.split(' ')[0];
+document.getElementById('welcome-text').textContent = `Welcome back, ${firstName}! 👋`;
+
+function logout() { localStorage.removeItem('rankup_current_user'); window.location.href = 'login.html'; }
+
+const uid         = user.email || user.username;
+const FLASH_KEY   = 'rankup_ai_flashcards_' + uid;
+const SESSION_KEY = 'rankup_sessions_' + uid;
+const STREAK_KEY  = 'rankup_streak_'   + uid;
+const QUIZ_KEY    = 'rankup_quiz_scores_' + uid;
+
+function computeStats() {
+  const sessions  = JSON.parse(localStorage.getItem(SESSION_KEY) || '[]');
+  const flashData = JSON.parse(localStorage.getItem(FLASH_KEY)   || '{}');
+  const streakD   = JSON.parse(localStorage.getItem(STREAK_KEY)  || '{}');
+  const totalSecs = sessions.reduce((s, x) => s + (x.duration || 0), 0);
+  const hours = Math.round(totalSecs / 3600 * 10) / 10;
+  document.getElementById('stat-hours').textContent = hours >= 1 ? Math.floor(hours) : (totalSecs >= 60 ? '<1' : 0);
+  // Count total sets across all subjects
+  const totalSets = Object.values(flashData).reduce((sum, sets) => sum + (Array.isArray(sets) ? sets.length : 0), 0);
+  document.getElementById('stat-flashcards').textContent = totalSets;
+  document.getElementById('stat-streak').textContent = streakD.count || 0;
+}
+computeStats();
+
+function timeAgo(dateStr, ts) {
+  const diff = Date.now() - (ts || new Date(dateStr).getTime());
+  const days = Math.floor(diff / 86400000), hrs = Math.floor(diff / 3600000), mins = Math.floor(diff / 60000);
+  if (days >= 1)  return days + ' day' + (days > 1 ? 's' : '') + ' ago';
+  if (hrs  >= 1)  return hrs  + ' hour' + (hrs  > 1 ? 's' : '') + ' ago';
+  if (mins >= 1)  return mins + ' min'  + (mins > 1 ? 's' : '') + ' ago';
+  return 'just now';
+}
+
+function renderRecentActivity() {
+  const container = document.getElementById('recent-activity');
+  const sessions  = JSON.parse(localStorage.getItem(SESSION_KEY) || '[]');
+  const flashData = JSON.parse(localStorage.getItem(FLASH_KEY)   || '{}');
+  const quizData  = JSON.parse(localStorage.getItem(QUIZ_KEY)    || '{}');
+  let events = [];
+  sessions.forEach(s => {
+    if (s.retrieved) {
+      events.push({ ts: s.ts, icon: 'restore', color: 'purple', label: 'Retrieved streak', sub: timeAgo(s.date, s.ts) });
+    } else if (s.duration) {
+      const mins = Math.round(s.duration / 60);
+      events.push({ ts: s.ts, icon: 'timer', color: 'blue', label: `Studied for ${mins < 60 ? mins + ' min' : Math.floor(mins/60) + 'h ' + (mins%60) + 'm'}`, sub: timeAgo(s.date, s.ts) });
+    }
+  });
+  Object.entries(flashData).forEach(([subject, sets]) => {
+    if (Array.isArray(sets)) {
+      sets.forEach(b => {
+        const ts = new Date(b.date).getTime();
+        events.push({ ts: ts || 0, icon: 'style', color: 'purple', label: `Created flashcards: ${subject}`, sub: b.date });
+      });
+    }
+  });
+  Object.entries(quizData).forEach(([subj, q]) => {
+    events.push({ ts: new Date(q.date || 0).getTime(), icon: 'check_circle', color: 'green', label: `Completed quiz: ${subj.toUpperCase()}`, sub: q.date || 'recently' });
+  });
+  events.sort((a, b) => b.ts - a.ts);
+  if (!events.length) { container.innerHTML = '<p class="text-gray-400 text-sm">No activity yet. Start studying to see your history here!</p>'; return; }
+  const colorMap = { green: 'bg-green-100 text-green-600', blue: 'bg-blue-100 text-blue-600', purple: 'bg-purple-100 text-purple-600' };
+  container.innerHTML = events.slice(0, 5).map((e, idx, arr) => `
+    <div class="flex items-start gap-4">
+      <div class="flex flex-col items-center">
+        <div class="${colorMap[e.color]||colorMap.blue} rounded-full p-2"><span class="material-symbols-outlined">${e.icon}</span></div>
+        ${idx < arr.length - 1 ? '<div class="w-px h-12 bg-gray-300 mt-2"></div>' : ''}
+      </div>
+      <div class="pt-1"><p class="font-medium">${e.label}</p><p class="text-sm text-gray-500">${e.sub}</p></div>
+    </div>`).join('');
+}
+renderRecentActivity();
+</script>
+</body>
+</html>

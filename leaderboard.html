@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>RankUp Leaderboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+body { background: linear-gradient(135deg, #ffffff, #a7baef); font-family: 'Manrope', sans-serif; }
+.material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.avatar-initials { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#103bbc,#3b5ff5); color:white; font-weight:800; font-size:16px; display:flex; align-items:center; justify-content:center; border:2px solid #93c5fd; flex-shrink:0; }
+.avatar-sm { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#6b7280,#9ca3af); color:white; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.table-header { background-color:#103bbc; color:white; }
+.table-row { transition:background 0.15s; }
+.table-row:nth-child(even) { background-color:#f6f6f8; }
+.table-row:nth-child(odd)  { background-color:#ffffff; }
+.table-row:hover { background-color:#eff3ff !important; }
+.highlight-row { background-color:#eef2ff !important; border-left:4px solid #103bbc; }
+.your-card { background:linear-gradient(135deg,#103bbc,#3b5ff5); color:white; border-radius:1rem; padding:1.5rem; }
+.podium-1 { background:linear-gradient(135deg,#fffbeb,#fef3c7); border:2px solid #f59e0b; }
+.podium-2 { background:linear-gradient(135deg,#f8fafc,#f1f5f9); border:2px solid #94a3b8; }
+.podium-3 { background:linear-gradient(135deg,#fff7ed,#ffedd5); border:2px solid #b45309; }
+.badge-beginner     { background:#dbeafe; color:#1d4ed8; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; display:inline-block; }
+.badge-intermediate { background:#ede9fe; color:#6d28d9; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; display:inline-block; }
+.badge-advanced     { background:#fce7f3; color:#9d174d; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; display:inline-block; }
+.sep-row td { padding:6px 20px; text-align:center; font-size:11px; color:#9ca3af; letter-spacing:2px; background:#f9fafb; }
+</style>
+</head>
+<body class="text-[#0d111b]" style="font-family:'Manrope',sans-serif">
+
+<!-- HEADER -->
+<header class="bg-white/60 backdrop-blur-sm sticky top-0 z-10 border-b border-blue-100 rounded-b-xl shadow-sm">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center gap-4">
+        <svg class="h-8 w-8 text-blue-700" fill="none" viewBox="0 0 48 48"><g clip-path="url(#c)"><path clip-rule="evenodd" d="M47.2426 24L24 47.2426L0.757355 24L24 0.757355L47.2426 24ZM12.2426 21H35.7574L24 9.24264L12.2426 21Z" fill="currentColor" fill-rule="evenodd"/></g><defs><clipPath id="c"><rect fill="white" height="48" width="48"/></clipPath></defs></svg>
+        <h1 class="text-xl font-bold">RankUp</h1>
+      </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="flashcards.html">Flashcards</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="quiz.html">Quizzes</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="stopwatch.html">Stopwatch</a>
+        <a class="text-sm font-bold text-blue-700" href="#">Leaderboard</a>
+        <a class="text-sm font-medium hover:text-blue-700 transition-colors" href="chatbot.html">Chatbot</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <div class="avatar-initials" id="user-avatar">?</div>
+        <div class="leading-tight hidden sm:block">
+          <p class="font-bold text-sm" id="user-name">...</p>
+          <p class="text-xs text-gray-500" id="user-email">...</p>
+        </div>
+        <button onclick="logout()" class="ml-1 flex items-center gap-1 px-3 py-1.5 rounded-full bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold transition-colors border border-red-200">
+          <span class="material-symbols-outlined text-sm">logout</span> Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="p-6 max-w-4xl mx-auto">
+
+  <!-- Title + countdown -->
+  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-4xl font-bold text-gray-800">Leaderboard 🏆</h1>
+      <p class="text-gray-500 mt-1 text-sm">Quiz points this week · resets every Sunday at midnight</p>
+    </div>
+    <div class="bg-white/80 border border-blue-100 rounded-xl px-5 py-3 shadow-sm flex-shrink-0">
+      <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">Week resets in</p>
+      <p class="text-2xl font-extrabold text-blue-700 tabular-nums" id="countdown-text">—</p>
+      <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+        <div id="countdown-bar" class="h-1.5 rounded-full bg-blue-600 transition-all duration-1000" style="width:100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Points legend -->
+  <div class="flex flex-wrap items-center gap-2 mb-6">
+    <span class="text-xs text-gray-500 font-semibold">Points per quiz:</span>
+    <span class="badge-beginner">Beginner = 10 pts</span>
+    <span class="badge-intermediate">Intermediate = 30 pts</span>
+    <span class="badge-advanced">Advanced = 50 pts</span>
+    <span class="text-xs text-gray-400 ml-1">· each quiz awarded once per completion</span>
+  </div>
+
+  <!-- Your standing card -->
+  <div class="your-card shadow-lg mb-8">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <p class="text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">Your Standing</p>
+        <p class="text-2xl font-extrabold" id="your-rank-text">—</p>
+        <p class="text-blue-200 text-sm mt-1" id="your-quizzes-text">No quizzes completed this week</p>
+      </div>
+      <div class="text-right">
+        <p class="text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">Weekly Score</p>
+        <p class="text-4xl font-extrabold" id="your-score-text">0</p>
+        <p class="text-blue-200 text-sm mt-1">points</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Podium -->
+  <div class="grid grid-cols-3 gap-3 mb-6" id="podium-section"></div>
+
+  <!-- Leaderboard table -->
+  <div class="overflow-x-auto rounded-xl shadow-md">
+    <table class="min-w-full text-left rounded-xl overflow-hidden">
+      <thead class="table-header">
+        <tr>
+          <th class="px-5 py-3 text-sm font-semibold">Rank</th>
+          <th class="px-5 py-3 text-sm font-semibold">Player</th>
+          <th class="px-5 py-3 text-sm font-semibold">Score</th>
+          <th class="px-5 py-3 text-sm font-semibold">Quizzes Completed</th>
+          <th class="px-5 py-3 text-sm font-semibold">Top Quiz</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body"></tbody>
+    </table>
+  </div>
+  <p class="text-xs text-gray-400 mt-3 text-center">
+    Only quizzes completed <strong>this week</strong> count. Board resets every Sunday midnight.
+  </p>
+
+</main>
+
+<script>
+// ════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════
+const POINTS = { beginner:10, intermediate:30, advanced:50 };
+
+// Must match quiz.html data-diff attributes
+const QUIZ_DIFF = { dsa:'beginner', daa:'intermediate', csa:'beginner', oops:'advanced' };
+const QUIZ_LABEL = { dsa:'DSA', daa:'DAA', csa:'CSA', oops:'OOPs' };
+
+// ── Auth ──────────────────────────────────────────────────────────
+const currentUser = JSON.parse(localStorage.getItem('rankup_current_user') || 'null');
+if (!currentUser) { window.location.href = 'login.html'; }
+
+const uid         = currentUser.email || currentUser.username;
+const displayName = currentUser.name  || currentUser.username || 'User';
+const myInitials  = displayName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+document.getElementById('user-name').textContent  = displayName;
+document.getElementById('user-email').textContent = currentUser.email || '';
+document.getElementById('user-avatar').textContent = myInitials;
+function logout() { localStorage.removeItem('rankup_current_user'); window.location.href='login.html'; }
+
+// ── Week key ──────────────────────────────────────────────────────
+function getWeekKey() {
+  const now = new Date();
+  const d   = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yr  = d.getUTCFullYear();
+  const wk  = Math.ceil(((d - new Date(Date.UTC(yr,0,1))) / 86400000 + 1) / 7);
+  return `${yr}-W${String(wk).padStart(2,'0')}`;
+}
+
+function getMondayOfWeek() {
+  const now = new Date();
+  const day = now.getDay() || 7;
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - day + 1);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+
+function msUntilSunday() {
+  const now  = new Date();
+  const next = new Date(now);
+  const days = (7 - now.getDay()) % 7 || 7;
+  next.setDate(now.getDate() + days);
+  next.setHours(0,0,0,0);
+  return next - now;
+}
+
+// ── Global board store ────────────────────────────────────────────
+// rankup_global_lb → { "YYYY-Www": { uid: { name, initials, score, quizzes:{subj:pts} } } }
+const LB_KEY = 'rankup_global_lb';
+
+function getBoardForWeek() {
+  const all  = JSON.parse(localStorage.getItem(LB_KEY) || '{}');
+  const week = getWeekKey();
+  if (!all[week]) all[week] = {};
+  return { all, week, board: all[week] };
+}
+
+function saveBoard(all) {
+  // Prune: keep only last 5 week keys
+  const keys = Object.keys(all).sort();
+  while (keys.length > 5) delete all[keys.shift()];
+  localStorage.setItem(LB_KEY, JSON.stringify(all));
+}
+
+// ── Compute this user's weekly score ─────────────────────────────
+// quiz.html saves: rankup_quiz_scores_<uid> = { dsa:{pct,correct,total,date}, ... }
+// "date" is toLocaleDateString() — we accept any quiz whose date falls within this Mon–Sun.
+function computeWeeklyScore() {
+  const rawScores = JSON.parse(localStorage.getItem('rankup_quiz_scores_' + uid) || '{}');
+  const weekStart = getMondayOfWeek();
+  const weeklyQuizzes = {}; // { subj: pts }
+
+  Object.entries(rawScores).forEach(([subj, data]) => {
+    // Try to parse the locale date string
+    let quizDate = null;
+    if (data.date) {
+      // toLocaleDateString varies by locale — try direct parse first, then fallback
+      quizDate = new Date(data.date);
+      if (isNaN(quizDate)) quizDate = null;
+    }
+    // If we can't parse (edge case), assume this week
+    const isThisWeek = !quizDate || quizDate >= weekStart;
+    if (isThisWeek && QUIZ_DIFF[subj]) {
+      weeklyQuizzes[subj] = POINTS[QUIZ_DIFF[subj]];
+    }
+  });
+
+  const totalPts = Object.values(weeklyQuizzes).reduce((s,v)=>s+v, 0);
+  return { weeklyQuizzes, totalPts };
+}
+
+// ── Push current user into the global board ───────────────────────
+function syncUser() {
+  const { weeklyQuizzes, totalPts } = computeWeeklyScore();
+  const { all, week, board } = getBoardForWeek();
+
+  board[uid] = {
+    name:     displayName,
+    initials: myInitials,
+    score:    totalPts,
+    quizzes:  weeklyQuizzes,
+  };
+  all[week] = board;
+  saveBoard(all);
+  return { weeklyQuizzes, totalPts };
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function rankSuffix(n) {
+  if(n===1) return 'st'; if(n===2) return 'nd'; if(n===3) return 'rd'; return 'th';
+}
+
+function renderPodium(players) {
+  const el   = document.getElementById('podium-section');
+  const top3 = players.slice(0,3);
+  const medals = ['🥇','🥈','🥉'];
+  const cls    = ['podium-1','podium-2','podium-3'];
+  // Display order: [1] left, [0] center, [2] right
+  const order  = [1,0,2];
+
+  if (top3.length === 0) {
+    el.innerHTML = '<p class="col-span-3 text-center text-sm text-gray-400 py-4">Complete quizzes this week to appear on the podium!</p>';
+    return;
+  }
+
+  el.innerHTML = order.map(i => {
+    const p = top3[i];
+    if (!p) return '<div></div>';
+    const ini = p.initials || p.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const highlight = p.isMe ? 'ring-2 ring-blue-500 ring-offset-2' : '';
+    const barH = i===0 ? '80px' : i===1 ? '52px' : '36px';
+    return `
+    <div class="rounded-xl p-4 text-center shadow-sm ${cls[i]} ${highlight}">
+      <div class="text-2xl mb-2">${medals[i]}</div>
+      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#103bbc,#3b5ff5);color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">${ini}</div>
+      <p class="font-bold text-sm text-gray-800 truncate">${p.name}${p.isMe?' 👈':''}</p>
+      <p class="text-2xl font-extrabold text-blue-700 mt-1">${p.score}</p>
+      <p class="text-xs text-gray-500 mb-2">pts</p>
+      <div style="background:rgba(0,0,0,0.08);border-radius:6px;height:${barH};width:100%"></div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable(players, myRank) {
+  const tbody = document.getElementById('leaderboard-body');
+  tbody.innerHTML = '';
+  const medals = ['🥇','🥈','🥉'];
+
+  if (!players.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">No scores yet this week — be the first! 🚀</td></tr>`;
+    return;
+  }
+
+  function makeRow(p, rank) {
+    const isMe = p.isMe;
+    const ini  = p.initials || p.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const quizBadges = Object.entries(p.quizzes||{}).map(([s,pts])=>
+      `<span class="badge-${QUIZ_DIFF[s]||'beginner'} mr-1 mb-1">${QUIZ_LABEL[s]||s} +${pts}</span>`
+    ).join('');
+    const bestEntry = Object.entries(p.quizzes||{}).sort((a,b)=>b[1]-a[1])[0];
+    const topQuiz   = bestEntry ? `${QUIZ_LABEL[bestEntry[0]]||bestEntry[0]} (${QUIZ_DIFF[bestEntry[0]]||''})` : '—';
+    const tr = document.createElement('tr');
+    tr.className = 'table-row' + (isMe ? ' highlight-row' : '');
+    tr.innerHTML = `
+      <td class="px-5 py-4 font-bold text-lg">${rank<=3 ? medals[rank-1] : rank}</td>
+      <td class="px-5 py-4">
+        <div class="flex items-center gap-3">
+          <div class="${isMe?'avatar-initials':'avatar-sm'}">${ini}</div>
+          <span class="font-semibold">${p.name}</span>
+          ${isMe?'<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">You</span>':''}
+        </div>
+      </td>
+      <td class="px-5 py-4 font-extrabold text-blue-700 text-lg">${p.score}</td>
+      <td class="px-5 py-4 text-sm">${quizBadges||'<span class="text-gray-400">—</span>'}</td>
+      <td class="px-5 py-4 text-sm text-gray-600">${topQuiz}</td>
+    `;
+    return tr;
+  }
+
+  const top5    = players.slice(0,5);
+  const inTop5  = myRank <= 5;
+  top5.forEach((p,i) => tbody.appendChild(makeRow(p, i+1)));
+
+  if (!inTop5 && players.length > 5) {
+    const sep = document.createElement('tr');
+    sep.className = 'sep-row';
+    sep.innerHTML = '<td colspan="5">· · · · ·</td>';
+    tbody.appendChild(sep);
+    const me = players[myRank-1];
+    if (me) tbody.appendChild(makeRow(me, myRank));
+  }
+}
+
+function render() {
+  const { weeklyQuizzes, totalPts } = syncUser();
+  const { board } = getBoardForWeek();
+
+  const players = Object.entries(board)
+    .map(([id, d]) => ({ ...d, uid:id, isMe: id===uid }))
+    .sort((a,b) => b.score - a.score || a.name.localeCompare(b.name));
+
+  const myRank = players.findIndex(p=>p.isMe) + 1 || players.length + 1;
+
+  // Your card
+  document.getElementById('your-rank-text').textContent =
+    players.length ? myRank + rankSuffix(myRank) + ' Place' : '—';
+  document.getElementById('your-score-text').textContent = totalPts;
+  const qLabels = Object.entries(weeklyQuizzes)
+    .map(([s,p]) => `${QUIZ_LABEL[s]||s} (+${p}pts)`).join(', ');
+  document.getElementById('your-quizzes-text').textContent =
+    qLabels || 'No quizzes completed this week';
+
+  renderPodium(players);
+  renderTable(players, myRank);
+}
+
+// ── Countdown ─────────────────────────────────────────────────────
+function updateCountdown() {
+  const ms   = msUntilSunday();
+  const d    = Math.floor(ms/86400000);
+  const h    = Math.floor((ms%86400000)/3600000);
+  const m    = Math.floor((ms%3600000)/60000);
+  const s    = Math.floor((ms%60000)/1000);
+  document.getElementById('countdown-text').textContent =
+    d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m ${s}s`;
+  const pct = Math.round((ms / (7*24*3600000)) * 100);
+  document.getElementById('countdown-bar').style.width = Math.max(2,pct) + '%';
+}
+
+// ── Boot ─────────────────────────────────────────────────────────
+render();
+updateCountdown();
+setInterval(updateCountdown, 1000);
+setInterval(render, 15000); // refresh every 15s so new completions appear quickly
+</script>
+</body>
+</html>

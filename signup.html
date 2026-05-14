@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RankUp - Sign Up</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 0;
+  min-height: 100vh;
+  font-family: 'Manrope', sans-serif;
+  background: linear-gradient(135deg, #ffffff, #a7baef);
+  display: flex; justify-content: center; align-items: center;
+  padding: 20px;
+}
+
+.signup-container {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  padding: 30px 40px;
+  width: 700px; max-width: 100%;
+}
+
+.signup-container h2 {
+  text-align: center; color: #103bbc;
+  font-size: 28px; font-weight: 800; margin-bottom: 6px;
+}
+.signup-container > p {
+  text-align: center; color: #555;
+  margin-bottom: 25px; font-size: 15px;
+}
+
+form { display: flex; flex-wrap: wrap; justify-content: space-between; }
+
+.input-box { width: 48%; margin-bottom: 20px; }
+.input-box.full { width: 100%; }
+
+.input-box input {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid #ccc; border-radius: 8px;
+  font-size: 15px; outline: none; font-family: 'Manrope', sans-serif;
+  transition: border 0.3s;
+}
+.input-box input:focus { border-color: #103bbc; }
+
+.checkbox { width: 100%; margin: 10px 0 20px 0; font-size: 14px; color: #444; }
+.checkbox input { margin-right: 8px; }
+.checkbox a { color: #103bbc; text-decoration: none; font-weight: 600; }
+
+.button-wrapper {
+  width: 100%; display: flex; flex-direction: column;
+  align-items: center; gap: 12px; margin-top: 10px;
+}
+.button-wrapper .btn,
+.button-wrapper .google-btn {
+  width: 250px; padding: 12px 0; border-radius: 8px;
+  font-size: 16px; font-weight: bold; cursor: pointer;
+  transition: 0.3s; display: flex; align-items: center;
+  justify-content: center; text-align: center;
+}
+.btn { border: none; background: #103bbc; color: white; font-family: 'Manrope', sans-serif; }
+.btn:hover { background: #1d4ed8; }
+.google-btn { border: 1px solid #ccc; background: #fff; gap: 10px; }
+.google-btn:hover { background: #f3f4f6; }
+.google-btn img { width: 18px; }
+
+/* Error / Success */
+.alert {
+  display: none; border-radius: 8px;
+  padding: 10px 14px; font-size: 13px;
+  margin-bottom: 16px; width: 100%;
+}
+.alert.show { display: block; }
+.alert.error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+.alert.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+
+.footer { text-align: center; font-size: 13px; color: #666; margin-top: 20px; }
+.footer a { color: #103bbc; text-decoration: none; font-weight: 600; }
+.footer a:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .input-box { width: 100%; }
+  .button-wrapper .btn,
+  .button-wrapper .google-btn { width: 100%; }
+}
+</style>
+</head>
+
+<body>
+<div class="signup-container">
+  <h2>RankUp — Sign Up</h2>
+  <p>Create your account and start learning smarter 🚀</p>
+
+  <div class="alert error" id="error-msg"></div>
+
+  <form id="signupForm">
+    <div class="input-box">
+      <input type="text" id="fullname" placeholder="Full Name" required>
+    </div>
+    <div class="input-box">
+      <input type="email" id="email" placeholder="Email Address" required>
+    </div>
+    <div class="input-box">
+      <input type="text" id="username" placeholder="Username" required>
+    </div>
+    <div class="input-box">
+      <input type="password" id="password" placeholder="Password" required>
+    </div>
+    <div class="input-box full">
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+    </div>
+
+    <div class="checkbox">
+      <label><input type="checkbox" id="terms" required> I agree to the <a href="#">Terms & Conditions</a></label>
+    </div>
+
+    <div class="button-wrapper">
+      <button type="submit" class="btn">Sign Up</button>
+      <div class="google-btn">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo">
+        <span>Sign Up with Google</span>
+      </div>
+    </div>
+  </form>
+
+  <div class="footer">
+    Already have an account? <a href="login.html">Log in</a>
+    <div style="margin-top:12px; color:#aaa; font-size:12px;">🔒 End-to-end encrypted</div>
+  </div>
+</div>
+
+<script>
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const name            = document.getElementById('fullname').value.trim();
+  const email           = document.getElementById('email').value.trim();
+  const username        = document.getElementById('username').value.trim();
+  const password        = document.getElementById('password').value.trim();
+  const confirmPassword = document.getElementById('confirmPassword').value.trim();
+  const errorMsg        = document.getElementById('error-msg');
+
+  // Validation
+  if (password !== confirmPassword) {
+    errorMsg.textContent = '❌ Passwords do not match.';
+    errorMsg.className = 'alert error show';
+    return;
+  }
+  if (password.length < 6) {
+    errorMsg.textContent = '❌ Password must be at least 6 characters.';
+    errorMsg.className = 'alert error show';
+    return;
+  }
+
+  // Check if email already registered
+  const users = JSON.parse(localStorage.getItem('rankup_users') || '[]');
+  const exists = users.find(u => u.email === email || u.username === username);
+  if (exists) {
+    errorMsg.textContent = '❌ An account with this email or username already exists.';
+    errorMsg.className = 'alert error show';
+    return;
+  }
+
+  // Save new user
+  users.push({ name, email, username, password });
+  localStorage.setItem('rankup_users', JSON.stringify(users));
+
+  // Auto-login: save current user
+  localStorage.setItem('rankup_current_user', JSON.stringify({ name, email, username }));
+
+  // Redirect to dashboard
+  window.location.href = 'dashboard.html';
+});
+</script>
+</body>
+</html>
